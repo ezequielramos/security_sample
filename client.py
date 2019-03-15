@@ -1,4 +1,5 @@
 import socket
+import hashlib
 
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
@@ -19,7 +20,12 @@ public_key = RSA.import_key(encoded_public_key)
 public_cipher_rsa = PKCS1_OAEP.new(public_key)
 
 #Encrypt info with public key
-enc_session_key = public_cipher_rsa.encrypt(b"uma informacao confidencial")
+secret_info = b'uma informacao confidencial'
+hash_secret_info = bytes(hashlib.sha256(secret_info).hexdigest(), 'UTF8')
+
+enc_hash_info = public_cipher_rsa.encrypt(hash_secret_info)
+enc_info = public_cipher_rsa.encrypt(secret_info)
 
 #Send encrypted data to Server
-s.send(enc_session_key)
+s.send(enc_hash_info)
+s.send(enc_info)

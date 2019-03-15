@@ -1,4 +1,5 @@
 import socket
+import hashlib
 
 from Crypto.PublicKey import RSA
 from Crypto import Random
@@ -24,14 +25,21 @@ conn, _ = s.accept()
 conn.send(public_key.exportKey())
 
 #Receive encrypted info from client
-enc_session_key = conn.recv(1480)
+enc_hash_info = conn.recv(1480)
+enc_info = conn.recv(1480)
 
 print('dado encriptado')
-print(enc_session_key)
-print()
+print('hash: %s' % enc_hash_info)
+print('info: %s' % enc_info)
 
 #Decrypt info using private key
-session_key = private_cipher_rsa.decrypt(enc_session_key)
+hash_info = private_cipher_rsa.decrypt(enc_hash_info)
+info = private_cipher_rsa.decrypt(enc_info)
 
 print('dado decriptado')
-print(session_key)
+print('hash: %s' % hash_info)
+print('info: %s' % info)
+
+hash_secret_info = bytes(hashlib.sha256(info).hexdigest(), 'UTF8')
+
+print('Hashs combinam. O dado esta integro.' if hash_info == hash_secret_info else 'Os hashs nao combinam. O dado esta comprometido quanto integridade.')
