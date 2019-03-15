@@ -7,6 +7,7 @@ from Crypto.Cipher import PKCS1_OAEP
 # TODO: Receive it on args
 HOST = '127.0.01'
 PORT = 5432
+TOKEN = 'abc123'
 
 #Connect to Server
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -20,7 +21,7 @@ public_key = RSA.import_key(encoded_public_key)
 public_cipher_rsa = PKCS1_OAEP.new(public_key)
 
 #Encrypt info with public key
-secret_info = b'uma informacao confidencial'
+secret_info = bytes(TOKEN, 'UTF8')
 hash_secret_info = bytes(hashlib.sha256(secret_info).hexdigest(), 'UTF8')
 
 enc_hash_info = public_cipher_rsa.encrypt(hash_secret_info)

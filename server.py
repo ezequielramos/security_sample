@@ -5,6 +5,8 @@ from Crypto.PublicKey import RSA
 from Crypto import Random
 from Crypto.Cipher import PKCS1_OAEP
 
+from tokens import valid_tokens
+
 # TODO: Receive it on args
 HOST = '127.0.01'
 PORT = 5432
@@ -42,4 +44,13 @@ print('info: %s' % info)
 
 hash_secret_info = bytes(hashlib.sha256(info).hexdigest(), 'UTF8')
 
-print('Hashs combinam. O dado esta integro.' if hash_info == hash_secret_info else 'Os hashs nao combinam. O dado esta comprometido quanto integridade.')
+print('Hashs combinam. O dado esta integro.' if hash_info == hash_secret_info else 'Os hashs não combinam. O dado esta comprometido quanto integridade.')
+
+#bytes to str
+info = info.decode()
+
+if info not in valid_tokens:
+    print('Token não é valido')
+    exit()
+
+print('Realizando comunicação com %s.' % valid_tokens[info])
