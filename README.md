@@ -32,7 +32,7 @@
 
 ## How to build it:
 
-Construido para versão Python3.6.7+. É recomendado que se utilize uma "virtualenv" para construir o projeto. Para verificar se ele já está instalado execute o seguinte comando:
+Construido para versão Python3.5.2+. É recomendado que se utilize uma "virtualenv" para construir o projeto. Para verificar se ele já está instalado execute o seguinte comando:
 
 ```
 $ python3 -m virtualenv --version`
