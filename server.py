@@ -1,27 +1,36 @@
+import socket
+
 from Crypto.PublicKey import RSA
 from Crypto import Random
 from Crypto.Cipher import PKCS1_OAEP
 
+# TODO: Receive it on args
+HOST = '127.0.01'
+PORT = 5432
+
+#Generate RSA Keys
 random_generator = Random.new().read
 private_key = RSA.generate(1024, random_generator)
+private_cipher_rsa = PKCS1_OAEP.new(private_key)
 public_key = private_key.publickey()
 
-print(private_key.exportKey())
-print()
-print(public_key.exportKey())
+#Connect to Client
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.bind((HOST, PORT))
+s.listen(1)
+conn, _ = s.accept()
 
-print()
-print("-" * 35)
-print()
+#Send encoded public key to client
+conn.send(public_key.exportKey())
 
-public_cipher_rsa = PKCS1_OAEP.new(public_key)
-enc_session_key = public_cipher_rsa.encrypt(b"uma informacao confidencial")
+#Receive encrypted info from client
+enc_session_key = conn.recv(1480)
 
 print('dado encriptado')
 print(enc_session_key)
-
 print()
-private_cipher_rsa = PKCS1_OAEP.new(private_key)
+
+#Decrypt info using private key
 session_key = private_cipher_rsa.decrypt(enc_session_key)
 
 print('dado decriptado')
