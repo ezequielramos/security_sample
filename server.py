@@ -14,14 +14,29 @@ if len(sys.argv) < 3:
     print('You need to specify all parameter. Ex.:\n\n python server.py 127.0.0.1 5432')
     exit()
 
+#Generate RSA Keys
+def generate_rsa_files():
+    random_generator = Random.new().read
+    private_key = RSA.generate(1024, random_generator)
+
+    encoded_private_key = private_key.export_key()
+
+    file_out = open("rsa_key.pem", "wb")
+    file_out.write(encoded_private_key)
+
+    return encoded_private_key
+
+try:
+    encoded_private_key = open("rsa_key.pem", "rb").read()
+except FileNotFoundError:
+    encoded_private_key = generate_rsa_files()
+
+private_key = RSA.import_key(encoded_private_key)
+public_key = private_key.publickey()
+private_cipher_rsa = PKCS1_OAEP.new(private_key)
+
 HOST = sys.argv[1]
 PORT = int(sys.argv[2])
-
-#Generate RSA Keys
-random_generator = Random.new().read
-private_key = RSA.generate(1024, random_generator)
-private_cipher_rsa = PKCS1_OAEP.new(private_key)
-public_key = private_key.publickey()
 
 #Connect to Client
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
