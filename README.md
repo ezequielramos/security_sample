@@ -74,11 +74,11 @@ $ source pyenv3/bin/activate
 ### How to run client:
 
 ```
-$ python client.py
+$ python client.py <server_ip> <server_port> <client_token> <data_id>
 ```
 
 ### How to run server:
 
 ```
-$ python server.py
+$ python server.py <server_ip> <server_port>
 ```

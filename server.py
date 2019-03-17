@@ -1,5 +1,6 @@
 import socket
 import hashlib
+import sys
 
 from cryptography.fernet import Fernet
 from Crypto.PublicKey import RSA
@@ -9,9 +10,12 @@ from Crypto.Cipher import PKCS1_OAEP
 from tokens import valid_tokens
 from data import get_data
 
-# TODO: Receive it on args
-HOST = '127.0.01'
-PORT = 5432
+if len(sys.argv) < 3:
+    print('You need to specify all parameter. Ex.:\n\n python server.py 127.0.0.1 5432')
+    exit()
+
+HOST = sys.argv[1]
+PORT = int(sys.argv[2])
 
 #Generate RSA Keys
 random_generator = Random.new().read
@@ -23,10 +27,8 @@ public_key = private_key.publickey()
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.bind((HOST, PORT))
 s.listen(1)
-conn, _ = s.accept()
-
-#Send encoded public key to client
-conn.send(public_key.exportKey())
+conn = None
+cipher_suite = None
 
 def receive_secret_info():
     global conn
@@ -73,30 +75,51 @@ def send_secret_info(info):
     conn.send(secret_info)
     conn.recv(2)
 
+def client_communication():
+    global conn, cipher_suite
+    
+    while True:
 
-symmetric_key = receive_secret_info()
-cipher_suite = Fernet(symmetric_key)
+        print('-' * 35)
 
-token = receive_secret_info()
-if token not in valid_tokens:
-    print('Token não é valido')
+        conn, _ = s.accept()
+
+        #Send encoded public key to client
+        conn.send(public_key.exportKey())
+
+        symmetric_key = receive_secret_info()
+        cipher_suite = Fernet(symmetric_key)
+
+        token = receive_secret_info()
+        if token not in valid_tokens:
+            print('Token não é valido')
+            send_secret_info('nok')
+            continue
+
+        send_secret_info('ok')
+
+        client_id = valid_tokens[token]
+
+        print()
+        print('Realizando comunicação com %s.' % client_id)
+        print()
+
+        data_id = receive_secret_info()
+        data = get_data(data_id)
+
+        if data == None:
+            print('Esse dado não existe.')
+            send_secret_info('Esse dado não existe.')
+            continue
+
+        if client_id not in data['owner']:
+            print('Cliente não tem acesso para acessar esta informacao.')
+            send_secret_info('Você não tem acesso a esta informação.')
+            continue
+
+        send_secret_info(data['text'])
+
+try:
+    client_communication()
+except KeyboardInterrupt:
     exit()
-
-client_id = valid_tokens[token]
-
-print()
-print('Realizando comunicação com %s.' % client_id)
-print()
-
-data_id = receive_secret_info()
-data = get_data(data_id)
-
-if data == None:
-    print('Esse dado não existe.')
-    exit()
-
-if client_id not in data['owner']:
-    print('Cliente não tem acesso para acessar esta informacao.')
-    exit()
-
-send_secret_info(data['text'])
